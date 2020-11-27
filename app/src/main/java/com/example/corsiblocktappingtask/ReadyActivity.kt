@@ -1,19 +1,21 @@
 package com.example.corsiblocktappingtask
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import android.os.CountDownTimer
 import android.os.Handler
+import androidx.appcompat.app.AppCompatActivity
 
-class ReadyActivity: Activity() {
+class ReadyActivity: AppCompatActivity() {
 
     lateinit var countDownTimer: CountDownTimer
     lateinit var countDownView: TextView
 
     companion object {
-        val TAG = "Final Project"
+        val TAG = "ReadyActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +36,8 @@ class ReadyActivity: Activity() {
 
             override fun onFinish() {
                 Log.i(TAG, "count down finished")
-                // TODO: This is where TaskActivity should be called
+                val intent = Intent(applicationContext, TaskActivity::class.java)
+                intent.resolveActivity(packageManager)?.let { startActivity(intent) }
             }
         }
         countDownTimer.start()

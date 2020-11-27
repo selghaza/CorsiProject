@@ -8,7 +8,7 @@ import android.widget.Button
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        val TAG = "Final Project"
+        val TAG = "MainActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
