@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ReadyActivity"/>
+        <activity android:name=".TaskActivity"/>
     </application>
 
 </manifest>
