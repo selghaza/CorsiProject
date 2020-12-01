@@ -2,6 +2,7 @@
 <resources>
     <color name="colorPrimary">#000</color>
     <color name="colorPrimaryDark">#7c4dff</color>
+    <color name="colorSecondaryDark">#4a148c</color>
     <color name="colorSecondary">#fff</color>
     <color name="doneBtnColor">#007E33</color>
 </resources>
