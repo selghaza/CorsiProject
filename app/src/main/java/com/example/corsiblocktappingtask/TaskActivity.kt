@@ -1,12 +1,9 @@
 package com.example.corsiblocktappingtask
 
 import android.app.Activity
-<<<<<<< HEAD
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.TransitionDrawable
-=======
 import android.graphics.Color
->>>>>>> origin
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +12,7 @@ import android.widget.Button
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -22,8 +20,6 @@ import kotlin.collections.ArrayList
 
 
 class TaskActivity: Activity() {
-
-
 
 
     var level: Int = 0
@@ -58,23 +54,69 @@ class TaskActivity: Activity() {
         box = tableRow.getChildAt(1) as TextView
 
         var i=0
-        doneBtn.setOnClickListener{
-                start()
-        }
-    }
 
-
-    // function designed to start the sequence
-    private fun start() {
-<<<<<<< HEAD
-        // initialize 9 boxes
         for (row_index in 0 until tableLayout.childCount) {
             val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
             for (box_index in 0 until tableRow.childCount) {
                 val box: TextView = tableRow.getChildAt(box_index) as TextView
                 boxes.add(box)
             }
-=======
+        }
+
+        start()
+
+        doneBtn.setOnClickListener{
+                // check()
+        }
+    }
+
+
+    private fun start() {
+        GlobalScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Default) {
+                delay(1000)
+            }
+            boxes[0].setBackgroundColor(Color.argb(160, 255, 255, 255))
+            withContext(Dispatchers.Default) {
+                delay(1000)
+            }
+            boxes[0].setBackgroundColor(Color.parseColor("#7c4dff"))
+        }
+//            val boxes = with(tableLayout.getChildAt(0) as TableRow) {
+//                (0..2).map { getChildAt(it) }
+//            }
+//
+//            delay(1000L)
+//            boxes.forEach { it.setBackgroundColor(Color.argb(160, 255, 255, 255)) }
+//
+//            delay(1000L)
+//            boxes.forEach { it.setBackgroundColor(Color.parseColor("#7c4dff")) }
+//        }
+    }
+
+    /*
+    // function designed to start the sequence
+    private fun start() {
+
+        val r1: Runnable = object : Runnable {
+            override fun run() {
+                box.setBackgroundColor(highlightColor)
+            }
+        }
+
+        val r2: Runnable = object : Runnable {
+            override fun run() {
+                box.setBackgroundColor(Color.parseColor("#7c4dff"))
+            }
+        }
+
+//        // initialize 9 boxes
+//        for (row_index in 0 until tableLayout.childCount) {
+//            val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
+//            for (box_index in 0 until tableRow.childCount) {
+//                val box: TextView = tableRow.getChildAt(box_index) as TextView
+//                boxes.add(box)
+//            }
 
         var i=0
         var randomInt=0
@@ -86,15 +128,15 @@ class TaskActivity: Activity() {
 
 //        Limit should be level
 
-            randomInt = random.nextInt(8)
-
-            println("Curr iteration: $i")
-            println("Random int: $randomInt")
-//            Random integer from 0-8
-
-            row = randomInt/3
-            col = randomInt%3
-            seqList.add(randomInt)
+//            randomInt = random.nextInt(8)
+//
+//            println("Curr iteration: $i")
+//            println("Random int: $randomInt")
+////            Random integer from 0-8
+//
+//            row = randomInt/3
+//            col = randomInt%3
+//            seqList.add(randomInt)
 
 
         while (i<3) {
@@ -103,7 +145,7 @@ class TaskActivity: Activity() {
 
             val handler = Handler(Looper.getMainLooper())
 
-            handler.postDelayed(rt, 1000)
+            handler.postDelayed(r1, 1000)
             handler.postDelayed(r2, 2000)
             i+=1
         }
@@ -139,30 +181,7 @@ class TaskActivity: Activity() {
 //            }
 //        }
     }
-
-    val rt: Runnable = object : Runnable {
-        override fun run() {
-            box.setBackgroundColor(highlightColor)
-        }
-    }
-
-    val r2: Runnable = object : Runnable {
-        override fun run() {
-            box.setBackgroundColor(Color.parseColor("#7c4dff"))
->>>>>>> origin
-        }
-
-        // create random sequence that user must replicate
-        for (seq in 1..sequence) {
-            val i: Int = random.nextInt(8)
-            val colorDrawables: Array<ColorDrawable> =
-                arrayOf(ColorDrawable(resources.getColor(R.color.colorSecondaryDark)), ColorDrawable(resources.getColor(R.color.colorPrimaryDark)))
-            val transitionDrawable: TransitionDrawable = TransitionDrawable(colorDrawables)
-            boxes[i].background = transitionDrawable
-            transitionDrawable.startTransition(1000)
-        }
-    }
-
+*/
 
 
 
