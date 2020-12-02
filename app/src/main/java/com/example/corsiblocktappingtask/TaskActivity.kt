@@ -1,19 +1,13 @@
 package com.example.corsiblocktappingtask
 
 import android.app.Activity
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Button
-import android.widget.TableLayout
-import android.widget.TableRow
-import android.widget.TextView
+import android.widget.*
 import androidx.annotation.RequiresApi
-import androidx.constraintlayout.widget.ConstraintSet
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -22,8 +16,7 @@ import kotlin.collections.HashMap
 
 class TaskActivity: Activity(), View.OnTouchListener {
 
-    var level: Int = 0
-    var sequence: Int = 2
+    var level: Int = 2
 
     lateinit var helpView: TextView
     lateinit var scoreView: TextView
@@ -33,8 +26,14 @@ class TaskActivity: Activity(), View.OnTouchListener {
     lateinit var boxes: ArrayList<TextView>
     lateinit var hash: HashMap<TextView, Int?>
 
+
+    private var userSequence = ArrayList<Int>()
+    private var sequence = ArrayList<Int>()
+
     private var highlightColor: Int = 0
     private var boxColor: Int = 0
+
+    private var userIsRight = true
 
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,27 +50,38 @@ class TaskActivity: Activity(), View.OnTouchListener {
         highlightColor = resources.getColor(R.color.colorHighlightBox)
         boxColor = resources.getColor(R.color.colorPrimaryDark)
 
+
+        var i=0
+
         for (row_index in 0 until tableLayout.childCount) {
             val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
             for (box_index in 0 until tableRow.childCount) {
                 val box: TextView = tableRow.getChildAt(box_index) as TextView
                 boxes.add(box)
-                hash[box] = 0
+                hash[box] = i
+                i+=1
             }
         }
 
-        startSequence()
+        doneBtn.setOnClickListener { passOrFail() }
+        startGame()
+    }
 
-        captureUserResponse()
-
-        doneBtn.setOnClickListener{ checkUserResponse() }
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun startGame(){
+//        do {
+            startSequence()
+            captureUserResponse()
+//        } while (userIsRight)
     }
 
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun startSequence() {
         GlobalScope.launch(Dispatchers.Main) {
-            for (i in 1..sequence) {
+
+            sequence.clear()
+            for (i in 1..level) {
                 val index :Int = (0..8).random()
                 val box: TextView = boxes[index]
 
@@ -83,24 +93,42 @@ class TaskActivity: Activity(), View.OnTouchListener {
 
                 unHighlightBox(box)
 
-                hash[box] = hash[box]?.inc()
+                sequence.add(index)
             }
         }
     }
 
     private fun captureUserResponse() {
+        userSequence.clear()
         for (box in boxes) {
             box.setOnTouchListener(this)
         }
     }
 
-    private fun checkUserResponse() {
-        val sum: Int = hash.values.fold(0) { acc, i -> if (i != null) acc.plus(i) else acc }
-        if (sum == 0) {
-            Log.i(TAG, "correct!")
-        } else {
-            Log.i(TAG, "not correct!")
+    private fun passOrFail(){
+        val bool = checkUserResponse()
+        if (bool){
+            Toast.makeText(applicationContext, "Good Work", Toast.LENGTH_SHORT).show()
+            level+=1
         }
+        else {
+            Toast.makeText(applicationContext, "DUMMY", Toast.LENGTH_SHORT).show()
+            userIsRight=false
+        }
+    }
+
+    private fun checkUserResponse(): Boolean {
+        var i=0
+        if (sequence.size != userSequence.size){
+            return false
+        }
+        while (i < sequence.size){
+            if (sequence[i] != userSequence[i]){
+                return false
+            }
+            i+=1
+        }
+        return true
     }
 
     private fun highlightBox(box: TextView) {
@@ -118,7 +146,10 @@ class TaskActivity: Activity(), View.OnTouchListener {
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
                 highlightBox(box)
-                hash[box] = hash[v]?.dec() // only want to decrement once
+                val i = hash[box]
+                if (i != null){
+                    userSequence.add(i)
+                }
             }
 
             MotionEvent.ACTION_UP -> {
