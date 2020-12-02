@@ -18,6 +18,7 @@ import kotlin.collections.HashMap
 class TaskActivity: Activity(), View.OnTouchListener {
 
     var level: Int = 2
+    var score = 0
 
     lateinit var helpView: TextView
     lateinit var scoreView: TextView
@@ -52,6 +53,9 @@ class TaskActivity: Activity(), View.OnTouchListener {
         boxColor = resources.getColor(R.color.colorPrimaryDark)
 
 
+        scoreView.setText("Score: $score")
+
+
         var i=0
 
         for (row_index in 0 until tableLayout.childCount) {
@@ -65,18 +69,32 @@ class TaskActivity: Activity(), View.OnTouchListener {
         }
 
         helpView.setOnClickListener { showHelpDialog() }
-        doneBtn.setOnClickListener { passOrFail() }
+
         startGame()
+
+        doneBtn.setOnClickListener { gameLoop() }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun gameLoop(){
+        val bool = checkUserResponse()
+
+        if (bool){
+            score += level
+            scoreView.setText("Score: $score")
+            level += 1
+            startGame()
+            Toast.makeText(applicationContext, "Good Work, next level", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(applicationContext, "You dishonor da famiry", Toast.LENGTH_SHORT).show()
+        }
     }
 
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun startGame(){
-//        do {
-            startSequence()
-            captureUserResponse()
-//        } while (userIsRight)
-
+        startSequence()
+        captureUserResponse()
     }
 
 
