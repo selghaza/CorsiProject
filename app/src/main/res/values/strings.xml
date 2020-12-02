@@ -4,4 +4,13 @@
     <string name="help">Help</string>
     <string name="score">Score: 0</string>
     <string name="done">Done</string>
+    <string name="helpDialogTitle">Game Instructions</string>
+    <string name="helpDialogMessage">
+        Nine boxes are arranged in front of you.
+        A sequence of boxes are tapped in a particular order.
+        Your job is to replicate that ordering of sequence by tapping the boxes.
+        As your get each sequence correct, your score will increment and the
+        sequence will get longer. You have one attempt per sequence.
+        This is a test of memory, so good luck!
+    </string>
 </resources>
