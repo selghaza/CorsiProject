@@ -1,6 +1,7 @@
 package com.example.corsiblocktappingtask
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -63,9 +64,11 @@ class TaskActivity: Activity(), View.OnTouchListener {
             }
         }
 
+        helpView.setOnClickListener { showHelpDialog() }
         doneBtn.setOnClickListener { passOrFail() }
         startGame()
     }
+
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun startGame(){
@@ -73,6 +76,7 @@ class TaskActivity: Activity(), View.OnTouchListener {
             startSequence()
             captureUserResponse()
 //        } while (userIsRight)
+
     }
 
 
@@ -137,6 +141,15 @@ class TaskActivity: Activity(), View.OnTouchListener {
 
     private fun unHighlightBox(box: TextView) {
         box.setBackgroundColor(boxColor)
+    }
+
+    private fun showHelpDialog() {
+        val dialogBuilder = AlertDialog.Builder(this).apply {
+            this.setTitle(R.string.helpDialogTitle)
+            this.setMessage(R.string.helpDialogMessage)
+        }
+        val dialog = dialogBuilder.create()
+        dialog.show()
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
