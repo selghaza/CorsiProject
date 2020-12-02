@@ -1,10 +1,9 @@
 package com.example.corsiblocktappingtask
 
 import android.app.Activity
-import android.graphics.Color
+import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -13,7 +12,6 @@ import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.constraintlayout.widget.ConstraintSet
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -65,6 +63,8 @@ class TaskActivity: Activity(), View.OnTouchListener {
         captureUserResponse()
 
         doneBtn.setOnClickListener{ checkUserResponse() }
+
+        helpView.setOnClickListener { showHelpDialog() }
     }
 
 
@@ -109,6 +109,15 @@ class TaskActivity: Activity(), View.OnTouchListener {
 
     private fun unHighlightBox(box: TextView) {
         box.setBackgroundColor(boxColor)
+    }
+
+    private fun showHelpDialog() {
+        val dialogBuilder = AlertDialog.Builder(this).apply {
+            this.setTitle(R.string.helpDialogTitle)
+            this.setMessage(R.string.helpDialogMessage)
+        }
+        val dialog = dialogBuilder.create()
+        dialog.show()
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
