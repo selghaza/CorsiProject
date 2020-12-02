@@ -1,26 +1,26 @@
 package com.example.corsiblocktappingtask
 
 import android.app.Activity
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.TransitionDrawable
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import androidx.annotation.RequiresApi
+import androidx.constraintlayout.widget.ConstraintSet
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
-
-
-class TaskActivity: Activity() {
-
+class TaskActivity: Activity(), View.OnTouchListener {
 
     var level: Int = 0
     var sequence: Int = 2
@@ -31,14 +31,12 @@ class TaskActivity: Activity() {
     lateinit var tableLayout: TableLayout
     lateinit var random: Random
     lateinit var boxes: ArrayList<TextView>
+    lateinit var hash: HashMap<TextView, Int?>
 
-    val highlightColor = Color.argb(160, 255, 255, 255)
-    lateinit var box: View
+    private var highlightColor: Int = 0
+    private var boxColor: Int = 0
 
-
-    private var mHandler: Handler = Handler()
-
-
+    @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_task)
@@ -49,170 +47,86 @@ class TaskActivity: Activity() {
         tableLayout = findViewById(R.id.tablelayout)
         random = Random()
         boxes = ArrayList<TextView>()
-
-        val tableRow = tableLayout.getChildAt(1) as TableRow
-        box = tableRow.getChildAt(1) as TextView
-
-        var i=0
+        hash = HashMap<TextView, Int?>()
+        highlightColor = resources.getColor(R.color.colorHighlightBox)
+        boxColor = resources.getColor(R.color.colorPrimaryDark)
 
         for (row_index in 0 until tableLayout.childCount) {
             val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
             for (box_index in 0 until tableRow.childCount) {
                 val box: TextView = tableRow.getChildAt(box_index) as TextView
                 boxes.add(box)
+                hash[box] = 0
             }
         }
 
-        start()
+        startSequence()
 
-        doneBtn.setOnClickListener{
-                // check()
-        }
+        captureUserResponse()
+
+        doneBtn.setOnClickListener{ checkUserResponse() }
     }
 
 
-    private fun start() {
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun startSequence() {
         GlobalScope.launch(Dispatchers.Main) {
-            withContext(Dispatchers.Default) {
-                delay(1000)
+            for (i in 1..sequence) {
+                val index :Int = (0..8).random()
+                val box: TextView = boxes[index]
+
+                withContext(Dispatchers.Default) { delay(800) }
+
+                highlightBox(box)
+
+                withContext(Dispatchers.Default) { delay(800) }
+
+                unHighlightBox(box)
+
+                hash[box] = hash[box]?.inc()
             }
-            boxes[0].setBackgroundColor(Color.argb(160, 255, 255, 255))
-            withContext(Dispatchers.Default) {
-                delay(1000)
-            }
-            boxes[0].setBackgroundColor(Color.parseColor("#7c4dff"))
         }
-//            val boxes = with(tableLayout.getChildAt(0) as TableRow) {
-//                (0..2).map { getChildAt(it) }
-//            }
-//
-//            delay(1000L)
-//            boxes.forEach { it.setBackgroundColor(Color.argb(160, 255, 255, 255)) }
-//
-//            delay(1000L)
-//            boxes.forEach { it.setBackgroundColor(Color.parseColor("#7c4dff")) }
-//        }
     }
 
-    /*
-    // function designed to start the sequence
-    private fun start() {
-
-        val r1: Runnable = object : Runnable {
-            override fun run() {
-                box.setBackgroundColor(highlightColor)
-            }
+    private fun captureUserResponse() {
+        for (box in boxes) {
+            box.setOnTouchListener(this)
         }
-
-        val r2: Runnable = object : Runnable {
-            override fun run() {
-                box.setBackgroundColor(Color.parseColor("#7c4dff"))
-            }
-        }
-
-//        // initialize 9 boxes
-//        for (row_index in 0 until tableLayout.childCount) {
-//            val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
-//            for (box_index in 0 until tableRow.childCount) {
-//                val box: TextView = tableRow.getChildAt(box_index) as TextView
-//                boxes.add(box)
-//            }
-
-        var i=0
-        var randomInt=0
-        var row=0
-        var col=0
-        val seqList = arrayListOf<Int>()
-
-
-
-//        Limit should be level
-
-//            randomInt = random.nextInt(8)
-//
-//            println("Curr iteration: $i")
-//            println("Random int: $randomInt")
-////            Random integer from 0-8
-//
-//            row = randomInt/3
-//            col = randomInt%3
-//            seqList.add(randomInt)
-
-
-        while (i<3) {
-            val tableRow = tableLayout.getChildAt(0) as TableRow
-            box = tableRow.getChildAt(i) as TextView
-
-            val handler = Handler(Looper.getMainLooper())
-
-            handler.postDelayed(r1, 1000)
-            handler.postDelayed(r2, 2000)
-            i+=1
-        }
-
-
-//            val handler = Handler(Looper.getMainLooper())
-//            handler.post {
-//                box.setBackgroundColor(highlightColor)
-//    //            box.setBackgroundColor(Color.parseColor("#7c4dff"))
-//            }
-//
-//            handler.postDelayed(rt, 1000)
-
-//            box.setBackgroundColor(highlightColor)
-//            mHandler.postDelayed(rt, 1000)
-//            mHandler.post { box.setBackgroundColor(Color.parseColor("#7c4dff")) }
-
-//            box.setBackgroundColor(Color.parseColor("#7c4dff"))
-
-//        doneBtn.setOnClickListener {
-//            Thread.sleep(1000)
-//            box.setBackgroundColor(highlightColor)
-//            mHandler.postDelayed(rt, 1000)
-//        }
-
-
-
-//        for (row_index in 0 until tableLayout.childCount) {
-//            val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
-//            for (box_index in 0 until tableRow.childCount) {
-//                val box: TextView = tableRow.getChildAt(box_index) as TextView
-//                Log.i(TAG, box.tag.toString())
-//            }
-//        }
     }
-*/
 
+    private fun checkUserResponse() {
+        val sum: Int = hash.values.fold(0) { acc, i -> if (i != null) acc.plus(i) else acc }
+        if (sum == 0) {
+            Log.i(TAG, "correct!")
+        } else {
+            Log.i(TAG, "not correct!")
+        }
+    }
 
+    private fun highlightBox(box: TextView) {
+        box.setBackgroundColor(highlightColor)
+    }
 
-//    fun startRepeating(v: View?) {
-//        println("Entered start repeating")
-//        mHandler.postDelayed(mToastRunnable, 50000);
-//        mToastRunnable.run()
-//        println("End of start repeating")
-//        stopRepeating(v)
-//    }
-//
-//    fun stopRepeating(v: View?) {
-//        mHandler.removeCallbacks(mToastRunnable)
-//    }
-//
-//    private val mToastRunnable: Runnable = object : Runnable {
-//        override fun run() {
-//            var color1 = Color.argb(160, 255, 0, 0)
-//            box.setBackgroundColor(color1)
-//            mHandler.postDelayed(this, 50000)
-//
-////            color1 = Color.argb(160, 0, 255, 0)
-////            box.setBackgroundColor(color1)
-//        }
-//    }
+    private fun unHighlightBox(box: TextView) {
+        box.setBackgroundColor(boxColor)
+    }
 
+    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
 
+        val box: TextView = v as TextView
 
-    // function designed to check the user's sequence
-    fun check() {
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                highlightBox(box)
+                hash[box] = hash[v]?.dec() // only want to decrement once
+            }
 
+            MotionEvent.ACTION_UP -> {
+                unHighlightBox(box)
+            }
+        }
+
+        return true
     }
 
     companion object {

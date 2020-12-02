@@ -27,7 +27,7 @@ class ReadyActivity: AppCompatActivity() {
         }, 1000)
     }
 
-    fun startTimer() {
+    private fun startTimer() {
         countDownTimer = object: CountDownTimer(3000, 100) {
             override fun onTick(millisUntilFinished: Long) {
                 val time = millisUntilFinished / 1000
