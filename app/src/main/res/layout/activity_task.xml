@@ -92,8 +92,8 @@
         </TableRow>
 
         <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="168dp"
+            android:layout_height="281dp"
             android:layout_margin="10dp">
 
             <TextView
@@ -152,5 +152,24 @@
                 android:tag="box9" />
         </TableRow>
     </TableLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="378dp"
+        android:layout_height="626dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="201dp"
+            android:layout_height="246dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/avd_correct" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

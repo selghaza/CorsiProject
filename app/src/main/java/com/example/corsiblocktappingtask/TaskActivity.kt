@@ -1,24 +1,26 @@
 package com.example.corsiblocktappingtask
 
-import android.app.Activity
 import android.app.AlertDialog
+import android.content.DialogInterface
+import android.content.Intent
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.concurrent.timerTask
 
-
-class TaskActivity: Activity(), View.OnTouchListener {
-
-    var level: Int = 2
-    var score = 0
+class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
     lateinit var helpView: TextView
     lateinit var scoreView: TextView
@@ -27,15 +29,18 @@ class TaskActivity: Activity(), View.OnTouchListener {
     lateinit var random: Random
     lateinit var boxes: ArrayList<TextView>
     lateinit var hash: HashMap<TextView, Int?>
-
+    lateinit var imageView: ImageView
+    lateinit var animatedVectorDrawableCompat: AnimatedVectorDrawableCompat
+    lateinit var animatedVectorDrawable: AnimatedVectorDrawable
 
     private var userSequence = ArrayList<Int>()
     private var sequence = ArrayList<Int>()
-
+    private var level: Int = 2
+    private var score: Int = 0
     private var highlightColor: Int = 0
     private var boxColor: Int = 0
 
-    private var userIsRight = true
+
 
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,22 +54,19 @@ class TaskActivity: Activity(), View.OnTouchListener {
         random = Random()
         boxes = ArrayList<TextView>()
         hash = HashMap<TextView, Int?>()
+        imageView = findViewById(R.id.imageView)
         highlightColor = resources.getColor(R.color.colorHighlightBox)
         boxColor = resources.getColor(R.color.colorPrimaryDark)
+        scoreView.text = "Score: $score"
 
-
-        scoreView.setText("Score: $score")
-
-
-        var i=0
+        var i: Int = 0 // index for hashing box views
 
         for (row_index in 0 until tableLayout.childCount) {
             val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
             for (box_index in 0 until tableRow.childCount) {
                 val box: TextView = tableRow.getChildAt(box_index) as TextView
                 boxes.add(box)
-                hash[box] = i
-                i+=1
+                hash[box] = i++
             }
         }
 
@@ -76,23 +78,52 @@ class TaskActivity: Activity(), View.OnTouchListener {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun gameLoop(){
-        val bool = checkUserResponse()
+    private fun gameLoop() {
+        val isCorrect: Boolean = checkUserResponse()
 
-        if (bool){
-            score += level
-            scoreView.setText("Score: $score")
-            level += 1
-            startGame()
-            Toast.makeText(applicationContext, "Good Work, next level", Toast.LENGTH_SHORT).show()
+        if (isCorrect){
+            // update fields
+            score++
+            scoreView.text = "Score: $score"
+            level++
+            // show result to user
+            imageView.setBackgroundResource(R.drawable.avd_correct)
+            animateResult()
+            // restart game after 2s delay
+            Timer().schedule(timerTask { startGame() }, 2000)
+
         } else {
-            Toast.makeText(applicationContext, "You dishonor da famiry", Toast.LENGTH_SHORT).show()
+            // show result to user
+            imageView.setBackgroundResource(R.drawable.avd_incorrect)
+            animateResult()
+
+            // show restart dialog after 2s delay
+            showRestartDialog()
         }
+    }
+
+    private fun animateResult() {
+
+        if (imageView.visibility == View.INVISIBLE) {
+            imageView.visibility = View.VISIBLE
+        }
+
+        // conditional is for backward compatibility
+        if (imageView.background is AnimatedVectorDrawableCompat) {
+            animatedVectorDrawableCompat = imageView.background as AnimatedVectorDrawableCompat
+            animatedVectorDrawableCompat.start()
+        } else {
+            animatedVectorDrawable = imageView.background as AnimatedVectorDrawable
+            animatedVectorDrawable.start()
+        }
+
+        // hide animation after 2s delay
+        Timer().schedule(timerTask { imageView.visibility = View.INVISIBLE }, 2000)
     }
 
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun startGame(){
+    private fun startGame() {
         startSequence()
         captureUserResponse()
     }
@@ -122,25 +153,11 @@ class TaskActivity: Activity(), View.OnTouchListener {
 
     private fun captureUserResponse() {
         userSequence.clear()
-        for (box in boxes) {
-            box.setOnTouchListener(this)
-        }
-    }
-
-    private fun passOrFail(){
-        val bool = checkUserResponse()
-        if (bool){
-            Toast.makeText(applicationContext, "Good Work", Toast.LENGTH_SHORT).show()
-            level+=1
-        }
-        else {
-            Toast.makeText(applicationContext, "DUMMY", Toast.LENGTH_SHORT).show()
-            userIsRight=false
-        }
+        boxes.forEach { it.setOnTouchListener(this) }
     }
 
     private fun checkUserResponse(): Boolean {
-        var i=0
+        var i: Int = 0
         if (sequence.size != userSequence.size){
             return false
         }
@@ -148,7 +165,7 @@ class TaskActivity: Activity(), View.OnTouchListener {
             if (sequence[i] != userSequence[i]){
                 return false
             }
-            i+=1
+            i++
         }
         return true
     }
@@ -168,6 +185,30 @@ class TaskActivity: Activity(), View.OnTouchListener {
         }
         val dialog = dialogBuilder.create()
         dialog.show()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun showRestartDialog() {
+        // show dialog after 2s delay -- requires delaying main thread
+        Handler(Looper.getMainLooper()).postDelayed(Runnable {
+            val dialogBuilder = AlertDialog.Builder(this).apply {
+                this.setTitle("Restart")
+                this.setMessage("Would you like to try again?")
+                this.setPositiveButton("Yes") { _, _ ->
+                    // reset fields
+                    score = 0
+                    level = 2
+                    scoreView.text = "Score: $score"
+                    startGame()
+                }
+                this.setNegativeButton("No") { _, _ ->
+                    val intent = Intent(applicationContext, MainActivity::class.java)
+                    intent.resolveActivity(packageManager)?.let { startActivity(intent) }
+                }
+            }
+            val dialog: AlertDialog = dialogBuilder.create()
+            dialog.show()
+        }, 2000)
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
