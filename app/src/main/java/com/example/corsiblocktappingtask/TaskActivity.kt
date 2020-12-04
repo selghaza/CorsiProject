@@ -1,8 +1,9 @@
 package com.example.corsiblocktappingtask
 
 import android.app.AlertDialog
-import android.content.DialogInterface
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Build
 import android.os.Bundle
@@ -33,6 +34,14 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     lateinit var animatedVectorDrawableCompat: AnimatedVectorDrawableCompat
     lateinit var animatedVectorDrawable: AnimatedVectorDrawable
 
+
+//    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+
+    var scorePref: SharedPreferences? = null
+    val MyPREFERENCES = "myprefs"
+    val value = "key"
+
     private var userSequence = ArrayList<Int>()
     private var sequence = ArrayList<Int>()
     private var level: Int = 2
@@ -58,6 +67,11 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         highlightColor = resources.getColor(R.color.colorHighlightBox)
         boxColor = resources.getColor(R.color.colorPrimaryDark)
         scoreView.text = "Score: $score"
+
+
+
+        scorePref = getPreferences(Context.MODE_PRIVATE)
+
 
         var i: Int = 0 // index for hashing box views
 
@@ -93,6 +107,15 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
             Timer().schedule(timerTask { startGame() }, 2000)
 
         } else {
+
+//            Updating high score
+            val highScore = scorePref?.getInt(KEY, -1)
+            if (score > highScore!!){
+                val e = scorePref?.edit()
+                e?.putInt(KEY, score)
+                e?.apply()
+            }
+
             // show result to user
             imageView.setBackgroundResource(R.drawable.avd_incorrect)
             animateResult()
@@ -234,5 +257,6 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
     companion object {
         private val TAG = "TaskActivity"
+        private val KEY = "key"
     }
 }
