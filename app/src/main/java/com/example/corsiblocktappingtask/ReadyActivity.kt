@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.TextView
 import android.os.CountDownTimer
 import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 
 class ReadyActivity: AppCompatActivity() {
@@ -22,7 +23,7 @@ class ReadyActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ready)
         countDownView = findViewById<TextView>(R.id.countDown_view)
-        Handler().postDelayed({
+        Handler(Looper.myLooper()!!).postDelayed({
             startTimer()
         }, 1000)
     }

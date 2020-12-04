@@ -48,6 +48,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     private var score: Int = 0
     private var highlightColor: Int = 0
     private var boxColor: Int = 0
+    private var enableOnTouch: Boolean = false
 
 
 
@@ -147,31 +148,37 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun startGame() {
-        startSequence()
+        GlobalScope.launch { startSequence() }
         captureUserResponse()
     }
 
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun startSequence() {
-        GlobalScope.launch(Dispatchers.Main) {
-
+    private suspend fun startSequence() {
+        enableOnTouch = false
+        doneBtn.isClickable = false
+        val job = GlobalScope.launch {
             sequence.clear()
             for (i in 1..level) {
-                val index :Int = (0..8).random()
+                val index: Int = (0..8).random()
                 val box: TextView = boxes[index]
 
-                withContext(Dispatchers.Default) { delay(800) }
+                delay(800)
 
                 highlightBox(box)
 
-                withContext(Dispatchers.Default) { delay(800) }
+                delay(800)
 
                 unHighlightBox(box)
 
                 sequence.add(index)
             }
         }
+        /* wait for sequence to finish during which onTouch of box views
+            and clickable of done button are disabled */
+        job.join()
+        enableOnTouch = true
+        doneBtn.isClickable = true
     }
 
     private fun captureUserResponse() {
@@ -235,6 +242,8 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+
+        if (!enableOnTouch) return false
 
         val box: TextView = v as TextView
 
