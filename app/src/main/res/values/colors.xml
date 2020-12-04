@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#000</color>
+
+    <color name="black">#000</color>
+
     <color name="colorPrimaryDark">#673ab7</color>
     <color name="colorSecondaryDark">#4a148c</color>
     <color name="colorHighlightBox">#b388ff</color>
     <color name="colorSecondary">#fff</color>
     <color name="doneBtnColor">#007E33</color>
+
+
+    <color name="textColor">#DBDBDB</color>
+
+
+
+    <color name="green">#007E33</color>
+
+    <color name="white">#fff</color>
+
+    <color name="red">#FF0000</color>
 </resources>

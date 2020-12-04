@@ -1,5 +1,6 @@
 package com.example.corsiblocktappingtask
 
+import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -9,17 +10,24 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.ContentFrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.concurrent.timerTask
+
 
 class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
@@ -34,12 +42,12 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     lateinit var animatedVectorDrawableCompat: AnimatedVectorDrawableCompat
     lateinit var animatedVectorDrawable: AnimatedVectorDrawable
 
+    lateinit var restartPopup: View
 
-//    private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
 
 
     var scorePref: SharedPreferences? = null
-    val MyPREFERENCES = "myprefs"
     val value = "key"
 
     private var userSequence = ArrayList<Int>()
@@ -51,11 +59,15 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     private var enableOnTouch: Boolean = false
 
 
+    var objectanimator: ObjectAnimator? = null
 
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_task)
+//        setContentView(R.layout.game_over_popup)
+
+//        val rootView = findViewById<ContentFrameLayout>(android.R.id.content).rootView
 
         helpView = findViewById(R.id.helpView)
         scoreView = findViewById(R.id.scoreView)
@@ -69,6 +81,13 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         boxColor = resources.getColor(R.color.colorPrimaryDark)
         scoreView.text = "Score: $score"
 
+
+//        restartPopup = applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE).inflate(R.layout.custom_popup, null)
+
+//        val layoutInflater = this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+//        val view: View = layoutInflater.inflate(R.layout.game_over_popup, null)
+//
+//        tableLayout.addView(view)
 
 
         scorePref = getPreferences(Context.MODE_PRIVATE)
@@ -89,7 +108,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
         startGame()
 
-        doneBtn.setOnClickListener { gameLoop() }
+        doneBtn.setOnClickListener { gameLoop()}
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -215,6 +234,32 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         }
         val dialog = dialogBuilder.create()
         dialog.show()
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun showCustomDialog() {
+        // show dialog after 2s delay -- requires delaying main thread
+        Handler(Looper.getMainLooper()).postDelayed(Runnable {
+
+            val dialogBuilder = AlertDialog.Builder(this).apply {
+                this.setTitle("Restart")
+                this.setMessage("Would you like to try again?")
+                this.setPositiveButton("Yes") { _, _ ->
+                    // reset fields
+                    score = 0
+                    level = 2
+                    scoreView.text = "Score: $score"
+                    startGame()
+                }
+                this.setNegativeButton("No") { _, _ ->
+                    val intent = Intent(applicationContext, MainActivity::class.java)
+                    intent.resolveActivity(packageManager)?.let { startActivity(intent) }
+                }
+            }
+            val dialog: AlertDialog = dialogBuilder.create()
+            dialog.show()
+        }, 2000)
     }
 
     @RequiresApi(Build.VERSION_CODES.N)

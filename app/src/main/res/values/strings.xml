@@ -3,6 +3,10 @@
     <string name="start_btn">Click to start</string>
     <string name="help">Help</string>
     <string name="score">Score: 0</string>
+
+    <string name="default_popup_text">There is no meaning</string>
+    <string name="default_popup_title">What is life?</string>
+
     <string name="done">Done</string>
     <string name="helpDialogTitle">Game Instructions</string>
     <string name="helpDialogMessage">
