@@ -133,6 +133,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     @RequiresApi(Build.VERSION_CODES.N)
     private suspend fun startSequence() {
         enableOnTouch = false
+        doneBtn.isClickable = false
         val job = GlobalScope.launch {
             sequence.clear()
             for (i in 1..level) {
@@ -150,10 +151,11 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
                 sequence.add(index)
             }
         }
-        /* wait for sequence to finish during which onTouch is
-            disabled on box views */
+        /* wait for sequence to finish during which onTouch of box views
+            and clickable of done button are disabled */
         job.join()
         enableOnTouch = true
+        doneBtn.isClickable = true
     }
 
     private fun captureUserResponse() {
