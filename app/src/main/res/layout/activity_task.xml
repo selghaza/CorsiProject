@@ -8,7 +8,6 @@
     android:layout_gravity="center_horizontal">
 
 
-
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="408dp"
@@ -20,9 +19,11 @@
 
         <Button
             android:id="@+id/done"
+            android:textColor="@color/textColor"
+            android:textSize="25dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/doneBtnColor"
+            android:background="@drawable/done_button"
             android:text="@string/done" />
 
         <LinearLayout
