@@ -140,7 +140,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
             imageView.setBackgroundResource(R.drawable.avd_incorrect)
             animateResult()
 
-            // show restart dialog after 2s delay
+            // show restart dialog
             showRestartDialog()
         }
     }
@@ -170,7 +170,6 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         GlobalScope.launch { startSequence() }
         captureUserResponse()
     }
-
 
     @RequiresApi(Build.VERSION_CODES.N)
     private suspend fun startSequence() {
