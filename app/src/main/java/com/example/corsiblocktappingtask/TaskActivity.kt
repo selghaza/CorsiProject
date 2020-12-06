@@ -1,24 +1,33 @@
 package com.example.corsiblocktappingtask
 
+import android.animation.ObjectAnimator
 import android.app.AlertDialog
-import android.content.DialogInterface
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.ContentFrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.concurrent.timerTask
+
 
 class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
@@ -33,6 +42,14 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     lateinit var animatedVectorDrawableCompat: AnimatedVectorDrawableCompat
     lateinit var animatedVectorDrawable: AnimatedVectorDrawable
 
+    lateinit var restartPopup: View
+
+
+
+
+    var scorePref: SharedPreferences? = null
+    val value = "key"
+
     private var userSequence = ArrayList<Int>()
     private var sequence = ArrayList<Int>()
     private var level: Int = 2
@@ -42,11 +59,15 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     private var enableOnTouch: Boolean = false
 
 
+    var objectanimator: ObjectAnimator? = null
 
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_task)
+//        setContentView(R.layout.game_over_popup)
+
+//        val rootView = findViewById<ContentFrameLayout>(android.R.id.content).rootView
 
         helpView = findViewById(R.id.helpView)
         scoreView = findViewById(R.id.scoreView)
@@ -59,6 +80,18 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         highlightColor = resources.getColor(R.color.colorHighlightBox)
         boxColor = resources.getColor(R.color.colorPrimaryDark)
         scoreView.text = "Score: $score"
+
+
+//        restartPopup = applicationContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE).inflate(R.layout.custom_popup, null)
+
+//        val layoutInflater = this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+//        val view: View = layoutInflater.inflate(R.layout.game_over_popup, null)
+//
+//        tableLayout.addView(view)
+
+
+        scorePref = getPreferences(Context.MODE_PRIVATE)
+
 
         var i: Int = 0 // index for hashing box views
 
@@ -75,7 +108,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
         startGame()
 
-        doneBtn.setOnClickListener { gameLoop() }
+        doneBtn.setOnClickListener { gameLoop()}
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -94,6 +127,15 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
             Timer().schedule(timerTask { startGame() }, 2000)
 
         } else {
+
+//            Updating high score
+            val highScore = scorePref?.getInt(KEY, -1)
+            if (score > highScore!!){
+                val e = scorePref?.edit()
+                e?.putInt(KEY, score)
+                e?.apply()
+            }
+
             // show result to user
             imageView.setBackgroundResource(R.drawable.avd_incorrect)
             animateResult()
@@ -194,6 +236,32 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         dialog.show()
     }
 
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun showCustomDialog() {
+        // show dialog after 2s delay -- requires delaying main thread
+        Handler(Looper.getMainLooper()).postDelayed(Runnable {
+
+            val dialogBuilder = AlertDialog.Builder(this).apply {
+                this.setTitle("Restart")
+                this.setMessage("Would you like to try again?")
+                this.setPositiveButton("Yes") { _, _ ->
+                    // reset fields
+                    score = 0
+                    level = 2
+                    scoreView.text = "Score: $score"
+                    startGame()
+                }
+                this.setNegativeButton("No") { _, _ ->
+                    val intent = Intent(applicationContext, MainActivity::class.java)
+                    intent.resolveActivity(packageManager)?.let { startActivity(intent) }
+                }
+            }
+            val dialog: AlertDialog = dialogBuilder.create()
+            dialog.show()
+        }, 2000)
+    }
+
     @RequiresApi(Build.VERSION_CODES.N)
     private fun showRestartDialog() {
         // show dialog after 2s delay -- requires delaying main thread
@@ -243,5 +311,6 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
     companion object {
         private val TAG = "TaskActivity"
+        private val KEY = "key"
     }
 }
