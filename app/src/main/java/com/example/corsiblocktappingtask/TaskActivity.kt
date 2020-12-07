@@ -47,8 +47,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     lateinit var imageView: ImageView
     lateinit var animatedVectorDrawableCompat: AnimatedVectorDrawableCompat
     lateinit var animatedVectorDrawable: AnimatedVectorDrawable
-
-
+    
     lateinit var dialog: Dialog
     lateinit var gameOverScore: TextView
     lateinit var restartBtn: Button
