@@ -1,9 +1,7 @@
 package com.example.corsiblocktappingtask
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import android.os.CountDownTimer
 import android.os.Handler
@@ -15,20 +13,18 @@ class ReadyActivity: AppCompatActivity() {
     lateinit var countDownTimer: CountDownTimer
     lateinit var countDownView: TextView
 
-    companion object {
-        val TAG = "ReadyActivity"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ready)
         countDownView = findViewById<TextView>(R.id.countDown_view)
         Handler(Looper.myLooper()!!).postDelayed({
+            // starts timer after 1s delay
             startTimer()
         }, 1000)
     }
 
     private fun startTimer() {
+        // timer starts a countdown from 3; zero is replaced with "Go!"
         countDownTimer = object: CountDownTimer(3000, 100) {
             override fun onTick(millisUntilFinished: Long) {
                 val time = millisUntilFinished / 1000
@@ -36,7 +32,6 @@ class ReadyActivity: AppCompatActivity() {
             }
 
             override fun onFinish() {
-                Log.i(TAG, "count down finished")
                 val intent = Intent(applicationContext, TaskActivity::class.java)
                 intent.resolveActivity(packageManager)?.let { startActivity(intent) }
             }
