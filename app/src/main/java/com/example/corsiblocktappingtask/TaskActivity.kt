@@ -1,11 +1,8 @@
 package com.example.corsiblocktappingtask
 
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.AnimatedVectorDrawable
@@ -15,20 +12,16 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.ContentFrameLayout
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -47,13 +40,11 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     lateinit var imageView: ImageView
     lateinit var animatedVectorDrawableCompat: AnimatedVectorDrawableCompat
     lateinit var animatedVectorDrawable: AnimatedVectorDrawable
-    
+
+
     lateinit var dialog: Dialog
     lateinit var gameOverScore: TextView
     lateinit var restartBtn: Button
-
-    var scorePref: SharedPreferences? = null
-    val value = "key"
 
     private var userSequence = ArrayList<Int>()
     private var sequence = ArrayList<Int>()
@@ -62,9 +53,11 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     private var highlightColor: Int = 0
     private var boxColor: Int = 0
     private var enableOnTouch: Boolean = false
+    private var tacoBellSound: MediaPlayer? = null
+    private var correctSound: MediaPlayer? = null
 
-    private var tacoBell: MediaPlayer? = null
-    private var correct: MediaPlayer? = null
+    var scorePref: SharedPreferences? = null
+    val value = "key"
 
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -83,16 +76,14 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         highlightColor = resources.getColor(R.color.colorHighlightBox)
         boxColor = resources.getColor(R.color.colorPrimaryDark)
         scoreView.text = "Score: $score"
-
-        tacoBell = MediaPlayer.create(this, R.raw.dong)
-        correct = MediaPlayer.create(this, R.raw.correct)
-
-
+        tacoBellSound = MediaPlayer.create(this, R.raw.dong)
+        correctSound = MediaPlayer.create(this, R.raw.correct)
         scorePref = getPreferences(Context.MODE_PRIVATE)
 
+   
+        var i: Int = 0 // used to map box views to indices
 
-        var i: Int = 0 // index for hashing box views
-
+        // initialize box TextViews, ArrayList, and HashMap
         for (row_index in 0 until tableLayout.childCount) {
             val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
             for (box_index in 0 until tableRow.childCount) {
@@ -102,17 +93,17 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
             }
         }
 
-        helpView.setOnClickListener { showHelpDialog() }
+        helpView.setOnClickListener { showHelpDialog() } // shows dialog with game instructions
 
         startGame()
 
-
-        doneBtn.setOnClickListener { gameLoop()}
+        doneBtn.setOnClickListener { gameLoop() }
 
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun highScoreDialog(): Dialog {
+        // set up dialog
         dialog = Dialog(this)
         dialog.setContentView(R.layout.highscore_popup)
         Objects.requireNonNull(dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)))
@@ -123,10 +114,13 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         restartBtn = dialog.findViewById(R.id.restartButton)
 
         restartBtn.setOnClickListener{
+            // reset fields
             score = 0
             level = 2
             scoreView.text = "Score: $score"
+            // kill dialog
             dialog.dismiss()
+            // restart game
             startGame()
         }
         return dialog
@@ -134,8 +128,9 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun gameOverDialog(): Dialog {
+        // retrieve highscore
         val highScore = scorePref?.getInt(KEY, 0)
-
+        // set up dialog
         dialog = Dialog(this)
         dialog.setContentView(R.layout.game_over_popup)
         Objects.requireNonNull(dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)))
@@ -146,10 +141,13 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         restartBtn = dialog.findViewById(R.id.restartButton)
 
         restartBtn.setOnClickListener{
+            // reset fields
             score = 0
             level = 2
             scoreView.text = "Score: $score"
+            // kill dialog
             dialog.dismiss()
+            // restart game
             startGame()
         }
 
@@ -161,7 +159,8 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     private fun showCustomDialog(newHighScore: Boolean) {
         // show dialog after 2s delay -- requires delaying main thread
         Handler(Looper.getMainLooper()).postDelayed(Runnable {
-
+            // if there is a new highscore, then a highscore dialog is shown.
+            // Otherwise, a game over dialog is shown
             dialog = if (newHighScore) highScoreDialog() else gameOverDialog()
             dialog.show()
 
@@ -170,17 +169,20 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun gameLoop() {
+        // check if user input is correct
         val isCorrect: Boolean = checkUserResponse()
 
+        // update score on view
         scoreView.text = "Score: $score"
 
-        if (isCorrect){
+        if (isCorrect) {
 
-            correct?.start()
+            // play sound
+            correctSound?.start()
 
-            // update fields
+            // update level field
             level++
-            // show result to user
+            // show animated check mark
             imageView.setBackgroundResource(R.drawable.avd_correct)
             animateResult()
             // restart game after 2s delay
@@ -188,26 +190,26 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
         } else {
 
-            tacoBell?.start()
+            // play sound
+            tacoBellSound?.start()
 
             var newHighScore = false
-//            Updating high score
+
+            // Updating high score if necessary
             val highScore = scorePref?.getInt(KEY, -1)
-            if (score > highScore!!){
+            if (score > highScore!!) {
                 val e = scorePref?.edit()
                 e?.putInt(KEY, score)
                 e?.apply()
                 newHighScore = true
             }
 
-            // show result to user
+            // show animated "X" to user
             imageView.setBackgroundResource(R.drawable.avd_incorrect)
             animateResult()
 
+            // show restart dialog
             showCustomDialog(newHighScore)
-
-            // show restart dialog after 2s delay
-//            showRestartDialog()
         }
     }
 
@@ -237,12 +239,14 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         captureUserResponse()
     }
 
-
     @RequiresApi(Build.VERSION_CODES.N)
     private suspend fun startSequence() {
+        // disable onTouch of box TextViews and done button
         enableOnTouch = false
         doneBtn.isClickable = false
+
         val job = GlobalScope.launch {
+            // present random sequence for user to replicate
             sequence.clear()
             for (i in 1..level) {
                 val index: Int = (0..8).random()
@@ -259,30 +263,30 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
                 sequence.add(index)
             }
         }
-        /* wait for sequence to finish during which onTouch of box views
-            and clickable of done button are disabled */
+        /* wait for sequence to finish at which point onTouch of box views
+            and done button are enabled again */
         job.join()
         enableOnTouch = true
         doneBtn.isClickable = true
     }
 
     private fun captureUserResponse() {
+        // clear any previous inputs
         userSequence.clear()
+        // setup listener for each TextView
         boxes.forEach { it.setOnTouchListener(this) }
     }
 
     private fun checkUserResponse(): Boolean {
         var i: Int = 0
-        if (sequence.size != userSequence.size){
-            return false
+
+        if (sequence.size != userSequence.size) return false
+
+        while (i < sequence.size) {
+            if (sequence[i] != userSequence[i]) return false
+            score++; i++
         }
-        while (i < sequence.size){
-            if (sequence[i] != userSequence[i]){
-                return false
-            }
-            score++
-            i++
-        }
+
         return true
     }
 
@@ -295,38 +299,20 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     }
 
     private fun showHelpDialog() {
+        // set up help dialog to aid user
         val dialogBuilder = AlertDialog.Builder(this).apply {
             this.setTitle(R.string.helpDialogTitle)
             this.setMessage(R.string.helpDialogMessage)
         }
         val dialog = dialogBuilder.create()
+        // show dialog
         dialog.show()
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun showRestartDialog() {
-        // show dialog after 2s delay -- requires delaying main thread
-        Handler(Looper.getMainLooper()).postDelayed(Runnable {
-            val dialogBuilder = AlertDialog.Builder(this).apply {
-                this.setTitle("Restart")
-                this.setMessage("Would you like to try again?")
-                this.setPositiveButton("Yes") { _, _ ->
-                    // reset fields
-                    score = 0
-                    level = 2
-                    scoreView.text = "Score: $score"
-                    startGame()
-                }
-                this.setNegativeButton("No") { _, _ ->
-                    val intent = Intent(applicationContext, MainActivity::class.java)
-                    intent.resolveActivity(packageManager)?.let { startActivity(intent) }
-                }
-            }
-            val dialog: AlertDialog = dialogBuilder.create()
-            dialog.show()
-        }, 2000)
-    }
-
+    /*
+        Overriding onTouch so that when the user presses down on a box TextView it is colored
+        and when the user releases, the box is returned to its original color
+     */
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
 
         if (!enableOnTouch) return false
@@ -351,7 +337,6 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     }
 
     companion object {
-        private val TAG = "TaskActivity"
         private val KEY = "key"
     }
 }
