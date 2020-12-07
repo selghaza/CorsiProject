@@ -94,6 +94,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
         var i: Int = 0 // index for hashing box views
 
+        // initialize box textviews
         for (row_index in 0 until tableLayout.childCount) {
             val tableRow: TableRow = tableLayout.getChildAt(row_index) as TableRow
             for (box_index in 0 until tableRow.childCount) {
@@ -124,10 +125,12 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         restartBtn = dialog.findViewById(R.id.restartButton)
 
         restartBtn.setOnClickListener{
+            // reset fields
             score = 0
             level = 2
             scoreView.text = "Score: $score"
             dialog.dismiss()
+            // restart game
             startGame()
         }
         return dialog
@@ -147,10 +150,12 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         restartBtn = dialog.findViewById(R.id.restartButton)
 
         restartBtn.setOnClickListener{
+            // reset fields
             score = 0
             level = 2
             scoreView.text = "Score: $score"
             dialog.dismiss()
+            // restart game
             startGame()
         }
 
@@ -162,7 +167,8 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
     private fun showCustomDialog(newHighScore: Boolean) {
         // show dialog after 2s delay -- requires delaying main thread
         Handler(Looper.getMainLooper()).postDelayed(Runnable {
-
+            // if there is a ner highscore, then a highscore dialog is shown,
+            // otherwise game over dialog is shown
             dialog = if (newHighScore) highScoreDialog() else gameOverDialog()
             dialog.show()
 
@@ -171,17 +177,18 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
     @RequiresApi(Build.VERSION_CODES.N)
     private fun gameLoop() {
+        // check if user input is correct
         val isCorrect: Boolean = checkUserResponse()
 
         scoreView.text = "Score: $score"
 
-        if (isCorrect){
+        if (isCorrect) {
 
-            correct?.start()
+            correct?.start() // play sounds
 
             // update fields
             level++
-            // show result to user
+            // show animated check mark
             imageView.setBackgroundResource(R.drawable.avd_correct)
             animateResult()
             // restart game after 2s delay
@@ -189,26 +196,25 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
 
         } else {
 
-            tacoBell?.start()
+            tacoBell?.start() // play sound
 
             var newHighScore = false
-//            Updating high score
+
+            // Updating high score if necessary
             val highScore = scorePref?.getInt(KEY, -1)
-            if (score > highScore!!){
+            if (score > highScore!!) {
                 val e = scorePref?.edit()
                 e?.putInt(KEY, score)
                 e?.apply()
                 newHighScore = true
             }
 
-            // show result to user
+            // show animated X to user
             imageView.setBackgroundResource(R.drawable.avd_incorrect)
             animateResult()
 
+            // show restart dialog
             showCustomDialog(newHighScore)
-
-            // show restart dialog after 2s delay
-//            showRestartDialog()
         }
     }
 
@@ -238,11 +244,11 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         captureUserResponse()
     }
 
-
     @RequiresApi(Build.VERSION_CODES.N)
     private suspend fun startSequence() {
         enableOnTouch = false
         doneBtn.isClickable = false
+
         val job = GlobalScope.launch {
             sequence.clear()
             for (i in 1..level) {
@@ -304,6 +310,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
         dialog.show()
     }
 
+    /*
     @RequiresApi(Build.VERSION_CODES.N)
     private fun showRestartDialog() {
         // show dialog after 2s delay -- requires delaying main thread
@@ -327,6 +334,7 @@ class TaskActivity: AppCompatActivity(), View.OnTouchListener {
             dialog.show()
         }, 2000)
     }
+    */
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
 
